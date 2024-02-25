@@ -1,0 +1,408 @@
+
+#include<iostream>
+#include<vector>
+#include<cassert>
+
+using namespace std;
+
+
+class Person
+{
+	size_t _id;
+	char* _name;
+	char* _surname;
+	char* _workAddress;
+	char* _liveAddress;
+	char* _phoneNumber;
+	double _salary;
+	static size_t _staticId;
+
+public:
+
+	Person(char* name, char* surname, char* workAddress, char* liveAddress, char* phoneNumber, double salary)
+	{
+		_id = _staticId++;
+		SetName(name);
+		SetSurname(surname);
+		SetWorkAddress(workAddress);
+		SetLiveAddress(liveAddress);
+		SetPhoneNumber(phoneNumber);
+		SetSalary(salary);
+	}
+
+	void SetName(char* name)
+	{
+		if (name != nullptr)
+		{
+			int len = strlen(name);
+			for (size_t i = 0; i < len; i++)
+				if (!((name[i] >= 65 && name[i] <= 90) || (name[i] >= 97 && name[i] <= 122)))
+					assert(!"name can only contain letters");
+
+			if (_name != nullptr) delete _name;
+			_name = new char[len + 1];
+			strcpy_s(_name, len + 1, name);
+
+
+		}
+		else
+			assert(!"name is not given");
+	}
+
+	void SetSurname(char* surname)
+	{
+		if (surname != nullptr)
+		{
+			int len = strlen(surname);
+			for (size_t i = 0; i < len; i++)
+				if (!((surname[i] >= 65 && surname[i] <= 90) || (surname[i] >= 97 && surname[i] <= 122)))
+					assert(!"surname can only contain letters");
+
+			if (_surname != nullptr) delete _surname;
+			_surname = new char[len + 1];
+			strcpy_s(_surname, len + 1, surname);
+
+		}
+		else
+			assert(!"surname is not given");
+	}
+
+	void SetWorkAddress(char* workAddress)
+	{
+		if (workAddress != nullptr)
+		{
+			int len = strlen(workAddress);
+			if (_workAddress != nullptr) delete _workAddress;
+			_workAddress = new char[len + 1];
+			strcpy_s(_workAddress, len + 1, workAddress);
+		}
+		else
+			assert(!"work address is not given");
+	}
+
+	void SetLiveAddress(char* liveAddress)
+	{
+		if (liveAddress != nullptr)
+		{
+			int len = strlen(liveAddress);
+			if (_liveAddress != nullptr) delete _liveAddress;
+			_liveAddress = new char[len + 1];
+			strcpy_s(_liveAddress, len + 1, liveAddress);
+		}
+		else
+			assert(!"live address is not given");
+	}
+
+	void SetPhoneNumber(char* phoneNumber)
+	{
+		if (phoneNumber != nullptr)
+		{
+			int len = strlen(phoneNumber);
+			if (_phoneNumber != nullptr)
+				delete[] _phoneNumber;
+			_phoneNumber = new char[len + 1];
+			strcpy_s(_phoneNumber, len + 1, phoneNumber);
+		}
+		else
+			assert(!"phone number is not given");
+
+
+	}
+
+	void SetSalary(double salary)
+	{
+		if (salary > 200)
+			_salary = salary;
+		else
+			assert(!"salary min must be 200 per month");
+	}
+
+	const char* GetName() { return _name; }
+	const char* GetSurname() { return _surname; }
+	const char* GetWorkAddress() { return _workAddress; }
+	const char* GetLiveAddress() { return _liveAddress; }
+	const char* GetPhoneNumber() { return _phoneNumber; }
+	double GetSalary() { return _salary; }
+	size_t GetId() { return _id; }
+
+	virtual void calculateTaxes() = 0;
+	virtual bool isEmployee() = 0;// eyer true return ederse employee false return ederse Debtor olur.
+
+	virtual void print() 
+	{
+		cout << endl;
+		cout << "ID: " << _id << endl;
+		cout << "Name: " << GetName() << endl;
+		cout << "Surname: " << GetSurname() << endl;
+		cout << "Work Address: " << GetWorkAddress() << endl;
+		cout << "Live Address: " << GetLiveAddress() << endl;
+		cout << "Phone Number: " << GetPhoneNumber() << endl;
+		cout << "Salary: " << _salary << endl;
+	}
+
+
+	~Person()
+	{
+		if (_name != nullptr)
+		{
+			delete _name;
+			_name = nullptr;
+		}
+
+		if (_surname != nullptr)
+		{
+			delete _surname;
+			_surname = nullptr;
+		}
+
+		if (_workAddress != nullptr)
+		{
+			delete _workAddress;
+			_workAddress = nullptr;
+		}
+
+		if (_liveAddress != nullptr)
+		{
+			delete _liveAddress;
+			_liveAddress = nullptr;
+		}
+
+		if (_phoneNumber != nullptr)
+		{
+			delete _phoneNumber;
+			_phoneNumber = nullptr;
+		}
+	}
+
+};
+
+size_t Person::_staticId = 1;
+
+
+class Debtor :public Person
+{
+private:
+	bool _hasLatePayment;
+	double _debt;
+
+public:
+
+	Debtor(char* name, char* surname, char* workAddress, char* liveAddress, char* phoneNumber, double salary, bool hasLatePayment, double debt) :Person(name, surname, workAddress, liveAddress, phoneNumber, salary)
+	{
+		_hasLatePayment = hasLatePayment;
+		SetDebt(debt);
+	}
+
+	void SetDebt(double debt)
+	{
+		if (debt >= 0)
+			_debt = debt;
+		else
+			assert(!"debt can not be negative");
+	}
+
+	double GetDebt() { return _debt; }
+	bool GetHasLatePayment() { return _hasLatePayment; }
+
+	void print() override
+	{
+		cout << boolalpha;
+		Person::print();
+		cout << "Has Late payment: " << _hasLatePayment << endl;
+		cout << "Debt: " << _debt << endl;
+	}
+
+	void calculateTaxes() override
+	{
+		double wage = Person::GetSalary();
+		cout << "Tax: " << wage * 0.02 << endl;
+	}
+
+	bool isEmployee() override
+	{
+		return false;
+	}
+
+	~Debtor() {}
+
+};
+
+
+
+class Employee :public Person
+{
+private:
+	bool _hasComputer;
+	bool _hasCar;
+public:
+
+	Employee(char* name, char* surname, char* workAddress, char* liveAddress, char* phoneNumber, double salary, bool hasComputer, bool hasCar) :Person(name, surname, workAddress, liveAddress, phoneNumber, salary)
+	{
+		_hasComputer = hasComputer;
+		_hasCar = hasCar;
+	}
+
+	bool GetHasComputer() { return _hasComputer; }
+	bool GetHasCar() { return _hasCar; }
+
+	void print() override
+	{
+		cout << boolalpha;
+		Person::print();
+		cout << "Has Computer: " << _hasComputer << endl;
+		cout << "Has Car: " << _hasCar << endl;
+	}
+
+	void calculateTaxes() override
+	{
+		double wage = Person::GetSalary();
+		cout << "Tax: " << wage * 0.03 << endl;
+	}
+
+	bool isEmployee() override
+	{
+		return true;
+	}
+
+	~Employee() {}
+};
+
+
+class Bank {
+private:
+	char* _name;
+	vector<Person*>* _persons;
+
+public:
+
+	Bank(char* name)
+	{
+		SetName(name);
+		_persons = new vector<Person*>;
+	}
+
+	void SetName(char* name)
+	{
+		if (name != nullptr)
+		{
+			int len = strlen(name);
+			if (_name != nullptr) delete _name;
+			_name = new char[len + 1];
+			strcpy_s(_name, len+1, name);
+		}
+		else
+			assert(!"name is not given");
+	}
+
+	void AddDebtor(char* name, char* surname, char* workAddress, char* liveAddress, char* phoneNumber, double salary, bool hasLatePayment, double debt)
+	{
+		_persons->push_back(new Debtor(name, surname, workAddress, liveAddress, phoneNumber, salary, hasLatePayment, debt));
+	}
+
+	void AddEmployee(char* name, char* surname, char* workAddress, char* liveAddress, char* phoneNumber, double salary, bool hasComputer, bool hasCar)
+	{
+		_persons->push_back(new Employee(name, surname, workAddress, liveAddress, phoneNumber, salary, hasComputer, hasCar));
+	}
+
+
+	void calculateTotalDebt()
+	{
+		double totalDebt = 0;
+		for (size_t i = 0; i < (*_persons).size(); i++)
+		{
+			if ((*_persons)[i]->isEmployee() == false)
+			{
+				Debtor* debtor = dynamic_cast<Debtor*>((*_persons)[i]);
+				totalDebt += debtor->GetDebt();
+			}
+		}
+
+		cout << "Total Debt: " << totalDebt << endl;
+	}
+
+	void calculateTotalSalary()
+	{
+		double totalSalary = 0;
+		for (size_t i = 0; i < (*_persons).size(); i++)
+			if ((*_persons)[i]->isEmployee())
+				totalSalary += (*_persons)[i]->GetSalary();
+
+		cout << "Total salary of employees: " << totalSalary << endl;
+	}
+
+	void printAllDebtors() 
+	{
+		for (size_t i = 0; i < (*_persons).size(); i++)
+			if ((*_persons)[i]->isEmployee() == false)
+				(*_persons)[i]->print();
+
+	}
+
+	void printAllEmployee()
+	{
+		for (size_t i = 0; i < (*_persons).size(); i++)
+			if ((*_persons)[i]->isEmployee())
+				(*_persons)[i]->print();
+	}
+
+	void printDebtorsDebtGreaterThan(double debt)
+	{
+		for (size_t i = 0; i < (*_persons).size(); i++)
+		{
+			if ((*_persons)[i]->isEmployee() == false)
+			{
+				Debtor* debtor = dynamic_cast<Debtor*>((*_persons)[i]);
+				if (debtor->GetDebt() > debt)
+					debtor->print();
+
+			}
+		}
+	}
+
+	void printDebtorsWithDelays()
+	{
+		for (size_t i = 0; i < (*_persons).size(); i++)
+		{
+			if ((*_persons)[i]->isEmployee() == false)
+			{
+				Debtor* debtor = dynamic_cast<Debtor*>((*_persons)[i]);
+				if (debtor->GetHasLatePayment())
+					debtor->print();
+
+			}
+		}
+	}
+
+	~Bank()
+	{
+		for (size_t i = 0; i < (*_persons).size(); i++)
+			delete (*_persons)[i];
+
+		delete _persons;
+
+		if (_name != nullptr)
+		{
+			delete _name;
+			_name = nullptr;
+		}
+
+	}
+};
+
+
+int main()
+{
+	Bank bank1(new char[] {"pasha"});
+	bank1.AddEmployee(new char[] {"zibeyda"}, new char[] {"musayeva"}, new char[] { "pasha"}, new char[] {"baku"}, new char[] {"055-123-89-56"}, 500, true, false);
+	bank1.AddDebtor(new char[] {"leyla"}, new char[] {"mirzeyeva"}, new char[] { "step it"}, new char[] {"baku"}, new char[] {"055-512-95-56"}, 500, true, 1000);
+	bank1.AddDebtor(new char[] {"sedef"}, new char[] {"mirzeyeva"}, new char[] { "asoiu"}, new char[] {"baku"}, new char[] {"055-782-95-53"}, 500, false, 1500);
+	//bank1.calculateTotalDebt();
+	/*bank1.calculateTotalSalary();
+	bank1.printAllDebtors();*/
+	//bank1.printAllEmployee();
+	//bank1.printDebtorsWithDelays();
+	//bank1.printDebtorsDebtGreaterThan(1200);
+
+
+
+}
